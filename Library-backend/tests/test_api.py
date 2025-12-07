@@ -13,7 +13,9 @@ def app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     with app.app_context():
         db.create_all()
-        b = Book(title='Test', author='Author')
+        b = Book()
+        b.title = 'Test'
+        b.author = 'Author'
         db.session.add(b)
         db.session.commit()
     yield app

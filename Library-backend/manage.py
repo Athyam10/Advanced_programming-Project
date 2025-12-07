@@ -19,8 +19,8 @@ app = create_app()
 # flask shell context
 @app.shell_context_processor
 def make_shell_context():
-return {"db": db, "LibraryItem": LibraryItem}
+    return {"db": db, "LibraryItem": LibraryItem}
 
 
 if __name__ == "__main__":
-app.run(debug=True)
+    app.run(debug=True)

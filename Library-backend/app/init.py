@@ -10,17 +10,14 @@ migrate = Migrate()
 
 
 def create_app(config_object=None):
-app = Flask(__name__)
-app.config.from_object(config_object or "app.config.Config")
+	app = Flask(__name__)
+	app.config.from_object(config_object or "app.config.Config")
 
+	db.init_app(app)
+	migrate.init_app(app, db)
 
-db.init_app(app)
-migrate.init_app(app, db)
+	# register routes
+	from .routes import bp as api_bp
+	app.register_blueprint(api_bp, url_prefix="/api")
 
-
-# register routes
-from .routes import bp as api_bp
-app.register_blueprint(api_bp, url_prefix="/api")
-
-
-return app
+	return app

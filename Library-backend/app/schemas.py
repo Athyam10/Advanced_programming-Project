@@ -4,11 +4,11 @@ from .models import LibraryItem
 
 
 class LibraryItemSchema(SQLAlchemyAutoSchema):
-class Meta:
-model = LibraryItem
-include_fk = True
-load_instance = True
-sqla_session = None
+	class Meta:
+		model = LibraryItem
+		include_fk = True
+		load_instance = True
+		sqla_session = None
 
 
 id = fields.Int(dump_only=True)
@@ -27,7 +27,7 @@ expected_available_date = fields.Date(allow_none=True)
 @validates("expected_available_date")
 def validate_expected(self, val):
 # expected date must be present only when is_available is False, but we won't enforce strict coupling here
-return val
+    return val
 
 class BookSchema(Schema):
 	id = fields.Int(dump_only=True)
