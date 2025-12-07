@@ -1,14 +1,5 @@
-
 from . import db
 
-from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
-
-class LibraryItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(128), nullable=False)
-    author = db.Column(db.String(128), nullable=False)
-    # Add other fields as needed
 
 class Book(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -18,4 +9,11 @@ class Book(db.Model):
 	def __repr__(self):
 		return f"<Book {self.title!r} by {self.author!r}>"
 
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
 
+class LibraryItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(128), nullable=False)
+    author = db.Column(db.String(128), nullable=False)
+    # Add other fields as needed
