@@ -18,3 +18,16 @@ def list_books():
     books = Book.query.all()
     return jsonify([{"id": b.id, "title": b.title, "author": b.author} for b in books])
 
+
+@bp.route('/')
+def index():
+    """Root endpoint — brief HTML with links to API endpoints for browser users."""
+    return (
+        '<html><head><title>Library API</title></head>'
+        '<body><h1>Library API</h1>'
+        '<ul>'
+        '<li><a href="/health">/health</a></li>'
+        '<li><a href="/books">/books</a></li>'
+        '</ul></body></html>'
+    )
+
