@@ -13,7 +13,8 @@ import requests
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTableWidget, QTableWidgetItem, QMessageBox, QDialog, QLabel,
-    QLineEdit, QTextEdit, QComboBox, QDateEdit, QCheckBox, QFormLayout
+    QLineEdit, QTextEdit, QComboBox, QDateEdit, QCheckBox, QFormLayout,
+    QInputDialog
 )
 from PyQt5.QtCore import Qt, QDate
 from dateutil import parser as dateparser
@@ -304,7 +305,7 @@ class LibraryApp(QWidget):
         currently_available = item.get("is_available", True)
         if currently_available:
             # ask for expected date to set when it will be available
-            expected, ok = QMessageBox.getText(self, "Mark unavailable", "Enter expected available date (YYYY-MM-DD):")
+            expected, ok = QInputDialog.getText(self, "Mark unavailable", "Enter expected available date (YYYY-MM-DD):")
             if not ok:
                 return
             # simple validation

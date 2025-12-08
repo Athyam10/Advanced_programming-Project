@@ -1,0 +1,29 @@
+name: CI - Python tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f Library-backend/requirements.txt ]; then pip install -r Library-backend/requirements.txt; fi
+          pip install pytest pytest-qt PyQt5 requests python-dateutil
+
+      - name: Run tests
+        env:
+          PYTHONPATH: Library-backend:Library_Frontend
+        run: |
+          python -m pytest -q
