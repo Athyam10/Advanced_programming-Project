@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QDate
 from dateutil import parser as dateparser
 
-API_BASE = "http://127.0.0.1:5000"  # change if needed
+API_BASE = "http://127.0.0.1:5000/"  # change if needed
 
 
 def iso_date_or_none(qdate: QDate):
