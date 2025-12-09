@@ -22,8 +22,11 @@ jobs:
           if [ -f Library-backend/requirements.txt ]; then pip install -r Library-backend/requirements.txt; fi
           pip install pytest pytest-qt PyQt5 requests python-dateutil
 
-      - name: Run tests
+      - name: Run tests with xvfb for PyQt5
         env:
           PYTHONPATH: Library-backend:Library_Frontend
+          QT_QPA_PLATFORM: offscreen
         run: |
-          python -m pytest -q
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          xvfb-run -a python -m pytest -q
