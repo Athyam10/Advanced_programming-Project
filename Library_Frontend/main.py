@@ -154,6 +154,11 @@ class LibraryApp(QWidget):
         self.table.setColumnHidden(0, True)  # hide ID column but keep it available for actions
         self.table.setSelectionBehavior(self.table.SelectRows)
         self.table.setEditTriggers(self.table.NoEditTriggers)
+        # Track column widths set by user
+        header = self.table.horizontalHeader()
+        if header:
+            header.sectionResized.connect(self.on_column_resized)
+        self.user_column_widths = {}  # store user-set column widths
         vbox.addWidget(self.table)
 
         self.setLayout(vbox)
@@ -213,6 +218,11 @@ class LibraryApp(QWidget):
             return False
 
     def load_items(self):
+        # Save current column widths before clearing rows
+        saved_widths = []
+        for col in range(self.table.columnCount()):
+            saved_widths.append(self.table.columnWidth(col))
+
         self.table.setRowCount(0)
         data = self.api_get("/items")
         if data is None:
@@ -240,7 +250,13 @@ class LibraryApp(QWidget):
             self.table.setItem(row, 4, avail_item)
             self.table.setItem(row, 5, expected_item)
 
-        self.table.resizeColumnsToContents()
+        # Restore user-set column widths if they exist, otherwise auto-resize
+        if self.user_column_widths:
+            for col, width in self.user_column_widths.items():
+                if col < self.table.columnCount():
+                    self.table.setColumnWidth(col, width)
+        else:
+            self.table.resizeColumnsToContents()
 
     def get_selected_item_id(self):
         sel = self.table.selectedItems()
@@ -252,6 +268,10 @@ class LibraryApp(QWidget):
         if id_item:
             return int(id_item.text())
         return None
+
+    def on_column_resized(self, col, old_size, new_size):
+        """Called when user manually resizes a column. Store the new width."""
+        self.user_column_widths[col] = new_size
 
     def add_item(self):
         dialog = ItemDialog(self)
