@@ -45,7 +45,12 @@ def create_item():
         except Exception:
             return jsonify({'message': 'expected_available_date must be YYYY-MM-DD'}), 400
 
-    item = LibraryItem(title=title, item_type=item_type, author_or_director=author, is_available=is_available, expected_available_date=exp_date)
+    item = LibraryItem()
+    item.title = title
+    item.item_type = item_type
+    item.author_or_director = author
+    item.is_available = is_available
+    item.expected_available_date = exp_date
     from . import db
     db.session.add(item)
     db.session.commit()
