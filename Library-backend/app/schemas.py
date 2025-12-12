@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, validate, post_load, validates, ValidationError
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-from .models import LibraryItem
+from .models import LibraryItem # type: ignore
 
 
 class LibraryItemSchema(SQLAlchemyAutoSchema):

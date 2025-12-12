@@ -1,8 +1,19 @@
+# Library_Frontend/tests/test_gui.py
 import json
+import sys
+import os
 import pytest
 from PyQt5.QtWidgets import QDialog
 
-import Library_Frontend.main as main
+# Ensure the Library_Frontend folder is on sys.path so we can import main.py
+# This makes the test runnable via:
+#   python Library_Frontend/tests/test_gui.py
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Now import the frontend module (main.py) as a plain module named 'main'
+import main as main
 
 SAMPLE_ITEMS = [
     {
@@ -28,6 +39,7 @@ def disable_message_boxes(monkeypatch):
 def test_load_items_populates_table(qtbot, monkeypatch):
     # prepare api_get to return our sample items
     monkeypatch.setattr(main, "API_BASE", "http://127.0.0.1:5000/")
+
     def fake_api_get(path, params=None):
         assert path == "/items"
         return SAMPLE_ITEMS
@@ -64,12 +76,14 @@ def test_add_item_flow(qtbot, monkeypatch):
 
     # api_post should return created item
     created = {"id": 2, "title": "Dune", "item_type": "book", "author_or_director": None, "is_available": True, "expected_available_date": None}
+
     def fake_api_post(self, path, json):
         assert path == "/items"
         return created, 201
 
     # api_get should return list including created item after creation
     called = {"get_calls": 0}
+
     def fake_api_get(self, path, params=None):
         called["get_calls"] += 1
         if called["get_calls"] == 1:

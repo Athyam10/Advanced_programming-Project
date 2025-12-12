@@ -1,12 +1,24 @@
+# app/__init__.py
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
-def create_app():
+def create_app(config_object=None):
     app = Flask(__name__)
-    app.config.from_object('app.config.Config')
-    db.init_app(app)
-    from .routes import bp as routes_bp
-    app.register_blueprint(routes_bp)
+
+    if config_object:
+        app.config.from_object(config_object)
+
+    # ---- Register API blueprint CLEANLY ----
+    try:
+        from .routes import bp as api_bp
+    except Exception as e:
+        raise RuntimeError(f"Failed to import API blueprint: {e}")
+
+    # Register only if not already registered
+    if "api" not in app.blueprints:
+        app.register_blueprint(api_bp, url_prefix="/api")
+
+    # Health check route (used by some tests)
+    @app.route("/health")
+    def health():
+        return {"status": "ok"}
+
     return app

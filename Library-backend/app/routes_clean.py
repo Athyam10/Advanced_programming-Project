@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from .models import Book
+from .models import Book # type: ignore
 
 bp = Blueprint('api', __name__)
 
