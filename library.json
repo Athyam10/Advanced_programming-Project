@@ -1,0 +1,29 @@
+{
+  "data": {
+    "1": {
+      "id": 1,
+      "title": "Transformers",
+      "item_type": "film",
+      "author_or_director": "Michael bay",
+      "is_available": false,
+      "expected_available_date": "2023-12-31"
+    },
+    "2": {
+      "id": 2,
+      "title": "The handsmaid's tale",
+      "item_type": "book",
+      "author_or_director": "charles dickens",
+      "is_available": true,
+      "expected_available_date": null
+    },
+    "3": {
+      "id": 3,
+      "title": "1984",
+      "item_type": "magazine",
+      "author_or_director": "mark luther berk",
+      "is_available": true,
+      "expected_available_date": null
+    }
+  },
+  "next_id": 4
+}
