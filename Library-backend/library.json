@@ -1,0 +1,10 @@
+{
+  "1": {
+    "id": 1,
+    "title": "The handmaid's tale",
+    "item_type": "book",
+    "author_or_director": "CHarles dickens",
+    "is_available": true,
+    "expected_available_date": null
+  }
+}

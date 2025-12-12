@@ -7,7 +7,7 @@ Features:
 - Delete item (DELETE /api/items/<id>)
 - Toggle availability and set expected_available_date
 """
-
+from typing import Optional
 import sys
 import requests
 from PyQt5.QtWidgets import (
@@ -131,11 +131,24 @@ class ItemDialog(QDialog):
 class LibraryApp(QWidget):
     def __init__(self):
         super().__init__()
+        self.user_column_widths = {}   # stores column widths the user sets (empty by default)
+
         self.setWindowTitle("Library Manager (PyQt Client)")
         self.resize(900, 500)
 
+        # --- Controls row: search, category, and action buttons ---
         vbox = QVBoxLayout()
-        hbox = QHBoxLayout()
+
+        # Controls row: search, category, and action buttons
+        controls_row = QHBoxLayout()
+
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Search exact name (press Enter or click Search)")
+        self.search_btn = QPushButton("Search")
+
+        self.category_combo = QComboBox()
+        self.category_combo.addItems(["All", "book", "film", "magazine", "other"])
+        self.category_combo.setCurrentIndex(0)
 
         self.refresh_btn = QPushButton("Refresh")
         self.add_btn = QPushButton("Add")
@@ -143,32 +156,42 @@ class LibraryApp(QWidget):
         self.delete_btn = QPushButton("Delete")
         self.toggle_avail_btn = QPushButton("Toggle Availability")
 
-        for w in (self.refresh_btn, self.add_btn, self.edit_btn, self.delete_btn, self.toggle_avail_btn):
-            hbox.addWidget(w)
+        controls_row.addWidget(self.search_input)
+        controls_row.addWidget(self.search_btn)
+        controls_row.addWidget(self.category_combo)
+        controls_row.addWidget(self.refresh_btn)
+        controls_row.addWidget(self.add_btn)
+        controls_row.addWidget(self.edit_btn)
+        controls_row.addWidget(self.delete_btn)
+        controls_row.addWidget(self.toggle_avail_btn)
 
-        vbox.addLayout(hbox)
+        vbox.addLayout(controls_row)
 
         # Table
         self.table = QTableWidget(0, 6)
         self.table.setHorizontalHeaderLabels(["ID", "Title", "Type", "Author/Director", "Available", "Expected date"])
-        self.table.setColumnHidden(0, True)  # hide ID column but keep it available for actions
+        self.table.setColumnHidden(0, True)
         self.table.setSelectionBehavior(self.table.SelectRows)
         self.table.setEditTriggers(self.table.NoEditTriggers)
-        # Track column widths set by user
-        header = self.table.horizontalHeader()
-        if header:
-            header.sectionResized.connect(self.on_column_resized)
-        self.user_column_widths = {}  # store user-set column widths
+
+        self.table.cellDoubleClicked.connect(self.on_row_double_clicked)
+
         vbox.addWidget(self.table)
 
         self.setLayout(vbox)
 
-        # connect
+        
         self.refresh_btn.clicked.connect(self.load_items)
         self.add_btn.clicked.connect(self.add_item)
         self.edit_btn.clicked.connect(self.edit_item)
         self.delete_btn.clicked.connect(self.delete_item)
         self.toggle_avail_btn.clicked.connect(self.toggle_availability)
+
+        # new connections for search / category
+        self.search_btn.clicked.connect(lambda: self.load_items(name=self.search_input.text().strip()))
+        self.search_input.returnPressed.connect(lambda: self.load_items(name=self.search_input.text().strip()))
+        self.category_combo.currentIndexChanged.connect(lambda _: self.load_items())
+
 
         # initial load
         self.load_items()
@@ -217,7 +240,27 @@ class LibraryApp(QWidget):
             QMessageBox.critical(self, "Network error", f"DELETE {path} failed:\n{e}")
             return False
 
-    def load_items(self):
+
+    def load_items(self, name: Optional[str] = None):
+        """
+        Load items from the backend.
+        If `name` is provided -> exact-name search (calls /items?name=...)
+        Otherwise, uses the selected category (if not 'All') to request /items?type=...
+        """
+        self.table.setRowCount(0)
+
+        params = {}
+        if name:
+            params['name'] = name
+        else:
+            cat = self.category_combo.currentText()
+            if cat and cat.lower() != "all":
+                params['type'] = cat
+        data = self.api_get("/items", params=params if params else None)
+        if data is None:
+            return
+        # rest of existing code continues (populate table)
+
         # Save current column widths before clearing rows
         saved_widths = []
         for col in range(self.table.columnCount()):
@@ -272,6 +315,33 @@ class LibraryApp(QWidget):
     def on_column_resized(self, col, old_size, new_size):
         """Called when user manually resizes a column. Store the new width."""
         self.user_column_widths[col] = new_size
+
+    def on_row_double_clicked(self, row, col):
+        """
+        Show simple metadata when a user double-clicks a row.
+        Connected to: self.table.cellDoubleClicked
+        """
+        id_item = self.table.item(row, 0)
+        if not id_item:
+            return
+        try:
+            item_id = int(id_item.text())
+        except Exception:
+            return
+
+        item = self.api_get(f"/items/{item_id}")
+        if not item:
+            return
+
+        info = (
+            f"Title: {item.get('title')}\n"
+            f"Type: {item.get('item_type')}\n"
+            f"Author/Director: {item.get('author_or_director') or '-'}\n"
+            f"Available: {'Yes' if item.get('is_available', True) else 'No'}\n"
+            f"Expected date: {item.get('expected_available_date') or '-'}"
+        )
+        QMessageBox.information(self, "Item metadata", info)
+
 
     def add_item(self):
         dialog = ItemDialog(self)
