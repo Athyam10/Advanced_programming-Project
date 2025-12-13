@@ -244,36 +244,29 @@ class LibraryApp(QWidget):
     def load_items(self, name: Optional[str] = None):
         """
         Load items from the backend.
-        If `name` is provided -> exact-name search (calls /items?name=...)
-        Otherwise, uses the selected category (if not 'All') to request /items?type=...
+        If `name` is provided -> exact-name search (/items?name=...)
+        Otherwise, uses the selected category (/items?type=...)
         """
-        self.table.setRowCount(0)
 
         params = {}
+
         if name:
-            params['name'] = name
+            params["name"] = name
         else:
             cat = self.category_combo.currentText()
             if cat and cat.lower() != "all":
-                params['type'] = cat
+                params["type"] = cat
+
         data = self.api_get("/items", params=params if params else None)
         if data is None:
             return
-        # rest of existing code continues (populate table)
-
-        # Save current column widths before clearing rows
-        saved_widths = []
-        for col in range(self.table.columnCount()):
-            saved_widths.append(self.table.columnWidth(col))
-
+        
         self.table.setRowCount(0)
-        data = self.api_get("/items")
-        if data is None:
-            return
-        # data is a list
+
         for item in data:
             row = self.table.rowCount()
             self.table.insertRow(row)
+
             id_item = QTableWidgetItem(str(item.get("id")))
             title_item = QTableWidgetItem(item.get("title", ""))
             type_item = QTableWidgetItem(item.get("item_type", ""))
@@ -281,8 +274,6 @@ class LibraryApp(QWidget):
             avail_item = QTableWidgetItem("Yes" if item.get("is_available", True) else "No")
             expected_item = QTableWidgetItem(item.get("expected_available_date") or "")
 
-            # align
-            # align
             id_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             avail_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -293,13 +284,8 @@ class LibraryApp(QWidget):
             self.table.setItem(row, 4, avail_item)
             self.table.setItem(row, 5, expected_item)
 
-        # Restore user-set column widths if they exist, otherwise auto-resize
-        if self.user_column_widths:
-            for col, width in self.user_column_widths.items():
-                if col < self.table.columnCount():
-                    self.table.setColumnWidth(col, width)
-        else:
-            self.table.resizeColumnsToContents()
+        self.table.resizeColumnsToContents()
+
 
     def get_selected_item_id(self):
         sel = self.table.selectedItems()
